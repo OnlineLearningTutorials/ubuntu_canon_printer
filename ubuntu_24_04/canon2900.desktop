@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Version=1.0
+Name=LBP2900
+GenericName=Status monitor for Canon CAPT Printer
+Exec=captstatusui -P 'LBP2900'
+Terminal=false
+Type=Application
+Icon=/usr/share/icons/Humanity/devices/48/printer.svg

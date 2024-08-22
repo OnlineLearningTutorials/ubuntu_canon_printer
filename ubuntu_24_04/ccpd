@@ -1,0 +1,64 @@
+#!/bin/bash
+# startup script for Canon Printer Daemon for CUPS (ccpd)
+### BEGIN INIT INFO
+# Provides:          ccpd
+# Required-Start:    $local_fs $remote_fs $syslog $network $named
+# Should-Start:      $ALL
+# Required-Stop:     $syslog $remote_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Description:       Start Canon Printer Daemon for CUPS
+### END INIT INFO
+
+# If the CUPS print server is not running, wait until it starts
+if [ `ps awx | grep cupsd | grep -v grep | wc -l` -eq 0 ]; then
+	while [ `ps awx | grep cupsd | grep -v grep | wc -l` -eq 0 ]
+	do
+		sleep 3
+	done
+	sleep 5
+fi
+
+ccpd_start ()
+{
+	echo -n "Starting ${DAEMON}: "
+	start-stop-daemon --start --quiet --oknodo --exec ${DAEMON}
+}
+
+ccpd_stop ()
+{
+	echo -n "Shutting down ${DAEMON}: "
+	start-stop-daemon --stop --quiet --oknodo --retry TERM/30/KILL/5 --exec ${DAEMON}
+}
+
+DAEMON=/usr/sbin/ccpd
+case $1 in
+	start)
+		ccpd_start
+		;;
+	stop)
+		ccpd_stop
+		;;
+	status)
+		echo "${DAEMON}:" $(pidof ${DAEMON})
+		;;
+	restart)
+		while true
+		do
+			ccpd_stop
+			ccpd_start
+			# if the ccpd process does not appear after 5 seconds, we restart it again
+			for (( i = 1 ; i <= 5 ; i++ ))
+			do
+				sleep 1
+				set -- $(pidof ${DAEMON})
+				[ -n "$1" -a -n "$2" ] && exit 0
+			done
+		done
+		;;
+	*)
+		echo "Usage: ccpd {start|stop|status|restart}"
+		exit 1
+		;;
+esac
+exit 0
